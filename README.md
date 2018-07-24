@@ -1,5 +1,5 @@
 # Credit-card-management-system-Hadoop-Hive
-This project create tables using the data from HDFS.
+This project use HIVE to create tables using the data in HDFS.
 
 
 -------------
@@ -13,3 +13,5 @@ This project create tables using the data from HDFS.
 2. A static table is built first to prepare for partition.
 
 3. A dynamic table is then built, partioned by the static table.
+
+4. Hive will remove the text files in HDFS when building the hive tables.
