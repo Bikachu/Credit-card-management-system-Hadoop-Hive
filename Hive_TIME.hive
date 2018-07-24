@@ -1,0 +1,33 @@
+create external table CDW_SAPP_D_TIME_static
+(TIMEID string,
+ DAY string,
+ MONTH string,
+ QUARTER string,
+ YEAR string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
+ESCAPED BY '"' LINES TERMINATED BY '\n'
+location '/user/maria_dev/CREDIT_CARD_HIVE_TABLES/CDW_SAPP_TIME';
+
+load data inpath '/user/maria_dev/CREDIT_CARD_SYSTEM/CDW_SAPP_TIME/'
+overwrite into table CDW_SAPP_D_TIME_static;
+
+
+//time dynamic
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+create table CDW_SAPP_D_TIME
+(TIMEID string,
+ DAY string,
+ MONTH string,
+ YEAR string)
+partitioned by (QUARTER string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
+ESCAPED BY '"' LINES TERMINATED BY '\n'
+stored as textfile
+location '/user/maria_dev/CREDIT_CARD_HIVE_TABLES/CDW_SAPP_TIME';
+
+insert overwrite table CDW_SAPP_D_TIME
+partition(QUARTER)
+SELECT TIMEID, DAY, MONTH, YEAR, QUARTER
+FROM CDW_SAPP_D_TIME_static;
