@@ -1,0 +1,38 @@
+create external table CDW_SAPP_D_BRANCH_static
+(BRANCH_CODE string, 
+ BRANCH_NAME string,
+ BRANCH_STREET string,
+ BRANCH_CITY string,
+ BRANCH_STATE string,
+ BRANCH_ZIP string,
+ BRANCH_PHONE string,
+ LAST_UPDATED timestamp)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
+ESCAPED BY '"' LINES TERMINATED BY '\n'
+location '/user/maria_dev/CREDIT_CARD_HIVE_TABLES/CDW_SAPP_BRANCH_STATIC';
+
+load data inpath '/user/maria_dev/CREDIT_CARD_SYSTEM/CDW_SAPP_BRANCH/'
+overwrite into table CDW_SAPP_D_BRANCH_static;
+
+//branch dynamic table 
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+create table CDW_SAPP_D_BRANCH
+(BRANCH_CODE int, 
+ BRANCH_NAME string,
+ BRANCH_STREET string,
+ BRANCH_CITY string,
+ BRANCH_ZIP int,
+ BRANCH_PHONE string,
+ LAST_UPDATED timestamp)
+partitioned by (BRANCH_STATE string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
+ESCAPED BY '"' LINES TERMINATED BY '\n'
+stored as textfile
+location '/user/maria_dev/CREDIT_CARD_HIVE_TABLES/CDW_SAPP_BRANCH';
+
+insert overwrite table CDW_SAPP_D_BRANCH
+partition(BRANCH_STATE)
+SELECT BRANCH_CODE,BRANCH_NAME, BRANCH_STREET, BRANCH_CITY, BRANCH_ZIP, BRANCH_PHONE, LAST_UPDATED, BRANCH_STATE
+FROM CDW_SAPP_D_BRANCH_static;

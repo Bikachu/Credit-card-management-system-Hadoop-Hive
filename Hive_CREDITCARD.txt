@@ -1,0 +1,38 @@
+create external table CDW_SAPP_D_CREDIT_CARD_static
+(CUST_CC_NO string, 
+ TIMEID string,
+ CUST_SSN string,
+ BRANCH_CODE string,
+ TRANSACTION_TYPE string,
+ TRANSACTION_VALUE string,
+ TRANSACTION_ID string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
+ESCAPED BY '"' LINES TERMINATED BY '\n'
+location '/user/maria_dev/CREDIT_CARD_HIVE_TABLES/CDW_SAPP_CREDIT_CARD_STATIC';
+
+load data inpath '/user/maria_dev/CREDIT_CARD_SYSTEM/CDW_SAPP_CREDITCARD/'
+overwrite into table CDW_SAPP_D_CREDIT_CARD_static;
+
+//DYNAMIC
+//PARTITIONED BY TRANSACTION_TYPE
+
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+create table CDW_SAPP_D_CREDIT_CARD
+(CUST_CC_NO string, 
+ TIMEID string,
+ CUST_SSN string,
+ BRANCH_CODE string,
+ TRANSACTION_VALUE string,
+ TRANSACTION_ID string)
+partitioned by (TRANSACTION_TYPE string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
+ESCAPED BY '"' LINES TERMINATED BY '\n'
+stored as textfile
+location '/user/maria_dev/CREDIT_CARD_HIVE_TABLES/CDW_SAPP_CREDIT_CARD';
+
+insert overwrite table CDW_SAPP_D_CREDIT_CARD
+partition(TRANSACTION_TYPE)
+SELECT CUST_CC_NO, TIMEID, CUST_SSN, BRANCH_CODE, TRANSACTION_VALUE, TRANSACTION_ID, TRANSACTION_TYPE
+FROM CDW_SAPP_D_CREDIT_CARD_static;
